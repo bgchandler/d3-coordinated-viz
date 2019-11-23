@@ -55,37 +55,37 @@ function setMap(){
     //use Promise.all to parallelize asynchronous data loading
     var promises = [];
     promises.push(d3.csv("data/unitsData.csv")); //load attributes from csv
-    promises.push(d3.json("data/EuropeCountries.topojson")); //load background spatial data
-    promises.push(d3.json("data/FranceRegions.topojson")); //load choropleth spatial data
+    promises.push(d3.json("data/World.topojson")); //load background spatial data
+    promises.push(d3.json("data/usStates.topojson")); //load choropleth spatial data
     Promise.all(promises).then(callback);
 
     function callback(data){
 
-        [csvData, europe, france] = data;
+        [csvData, world, us] = data;
 
 
 
         //place graticule on the map
         setGraticule(map, path);
 
-        //translate europe TopoJSON
-        var europeCountries = topojson.feature(europe, europe.objects.ne_10m_land),
-            franceRegions = topojson.feature(france, france.objects.ne_110m_admin_1_states_provinces_lakes).features;
+        //translate world TopoJSON
+        var allWorld = topojson.feature(world, world.objects.ne_10m_land),
+            states = topojson.feature(us, us.objects.ne_110m_admin_1_states_provinces_lakes).features;
 
-        //add Europe countries to map
+        //add world countries to map
         var countries = map.append("path")
-            .datum(europeCountries)
+            .datum(allWorld)
             .attr("class", "countries")
             .attr("d", path);
 
         //join csv data to GeoJSON enumeration units
-        franceRegions = joinData(franceRegions, csvData);
+        states = joinData(states, csvData);
 
         //create the color scale
         var colorScale = makeColorScale(csvData);
 
         //add enumeration units to the map
-        setEnumerationUnits(franceRegions, map, path, colorScale);
+        setEnumerationUnits(states, map, path, colorScale);
 
         //add coordinated visualization to the map
         setChart(csvData, colorScale);
@@ -201,7 +201,7 @@ function choropleth(props, colorScale){
 
 function setEnumerationUnits(franceRegions, map, path, colorScale){
     //...REGIONS BLOCK FROM MODULE 8
-    //add France regions to map
+    //add us states to map
     var regions = map.selectAll(".regions")
         .data(franceRegions)
         .enter()
